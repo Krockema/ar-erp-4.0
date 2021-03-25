@@ -6,7 +6,12 @@
         <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
         <script src="https://cdn.rawgit.com/donmccurdy/aframe-extras/v6.1.0/dist/aframe-extras.min.js"></script>
         <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script> 
+        <script src="https://unpkg.com/aframe-curve-component/dist/aframe-curve-component.min.js"></script>
+        <script src="https://rawgit.com/protyze/aframe-alongpath-component/master/dist/aframe-alongpath-component.min.js"></script>
         <script src="https://rawgit.com/jeromeetienne/AR.js/master/aframe/build/aframe-ar.min.js"></script>
+      
+        
+        <!--  -->
         <script>
             AFRAME.registerComponent('code-to-attach-to-box', {
                 init: function () {
@@ -23,40 +28,96 @@
             console.log(this.el);
             }
         });
+
+        AFRAME.registerComponent('assembly', {
+        init: function () {
+            var el = this.el;
+            var geometry = 'url(models/Assembly.glb); height: 2; width: 2; depth: 2;';
+            el.setAttribute('geometry', geometry);
+        }});
        
        </script>
    </head>
     <body style='margin : 0px; overflow: hidden;'>
         <!-- we add detectionMode and matrixCodeType to tell AR.js to recognize barcode markers -->
-        <a-scene renderer="logarithmicDepthBuffer:true;"> 
+        <a-scene renderer="logarithmicDepthBuffer:true; colorManagement: true;" stats> 
         <!-- <a-scene renderer="logarithmicDepthBuffer:true;"embedded arjs> -->
             <!--  inspector="https://cdn.jsdelivr.net/gh/aframevr/aframe-inspector@master/dist/aframe-inspector.min.js" embedded stats      position="x z y"-->
-            
-            <a-marker  type='pattern'  url='assets/pattern-kipper.patt'>
-                <a-entity rotatate="0 0 0" position="0 0 0">
-                    <a-text position="0 0 0" value="0 0 0" color="red"></a-text>
-                    <a-text position="1 0 0" value="1 0 0" color="red"></a-text>
-                    <a-text position="0 0 1" value="0 0 1" color="red"></a-text>
-                    <a-text position="1 0 1" value="1 0 1" color="red"></a-text>
-                    <a-text position="-1 0 0" value="-1 0 0" color="red"></a-text>
-                    <a-text position="0 0 -1" value="0 0 -1" color="red"></a-text>
-                    <a-text position="1 0 -1" value="1 0 -1" color="red"></a-text>
-                    <a-text position="-1 0 1" value="-1 0 1" color="red"></a-text>
-                    <a-text position="-1 0 -1" value="-1 0 -1" color="red"></a-text>
+            <a-assets>
+                <a-asset-item id="assembly" src="models/Assembly.glb" scale="0.8 0.8 0.8"></a-asset-item>
+                <a-asset-item id="saw" src="models/portalsystem.glb" ></a-asset-item>
+            </a-assets>
 
-  
+            <a-marker  type='pattern'  url='assets/pattern-kipper.patt'>
+                <!--      rotation"anheben kippen drehen"-->
+                <a-entity rotation="0 0 0" position="0 0.7 -0.85" scale="1.2 1.5 1.2">
+                    <!-- saws -->
                     <a-entity id="saw" 
-                                code-to-attach-to-box
-                                gltf-model="url(models/sawAnimatedMergedBlade.glb)"
-                                position="1 0 -1" 
-                                scale="0.5 0.5 0.5"
+                                gltf-model="#saw"
+                                animation-mixer="loop:repeat; duration: 3"
+                                position="-3 0 -1" 
                                 rotation="0 0 0"
+                                scale="0.8 0.8 0.8"
                     ></a-entity>
+                    <a-entity id="saw2" 
+                                gltf-model="#saw"
+                                animation-mixer="loop:repeat; duration: 3; timeScale: 1.2"
+                                position="-3 0 1" 
+                                rotation="0 0 0"
+                                scale="0.8 0.8 0.8"
+                    ></a-entity>
+
+                    <!-- Drills -->
+                    <a-entity id="drill" 
+                                code-to-attach-to-box
+                                gltf-model="url(models/Bohrwerk.glb)"
+                                position="0 0 -1" 
+                                scale="0.8 0.8 0.8"
+                                rotation="0 0.45 0"
+                    ></a-entity>
+
+
+                    <!-- Assembly -->
+                    <a-entity id="ass1" 
+                                gltf-model="#assembly"
+                                position="3 0 -2" 
+                                rotation="0 135 0"
+                    ></a-entity>
+                    <a-entity   id="ass2" 
+                                gltf-model="#assembly"
+                                position="3 0 0" 
+                                rotation="0 -45  0"
+                    ></a-entity>                    
+
+                    <!-- Drills -->
+                    <a-entity id="stock" 
+                                code-to-attach-to-box
+                                gltf-model="url(models/Stock.glb)"
+                                position="0 0 -3" 
+                                scale="0.8 0.4 0.8"
+                                rotation="0 90 0"
+                    ></a-entity>
+
+                    <!-- Product tracs -->
+
+                    <a-curve id="track1">
+                        <a-curve-point position="0.5 -1 -2"></a-curve-point>
+                        <a-curve-point position="1.2 -1 -0.75"></a-curve-point>
+                        <a-curve-point position="2 -1 -0.25"></a-curve-point>
+                        <a-curve-point position="3 -1 0"></a-curve-point>
+                    </a-curve>
+
+                    <a-draw-curve curveref="#track1" material="shader: line; color: blue;"></a-draw-curve>
+
+                    <a-box alongpath="curve: #track1; loop:true; dur:4000;" width="0.1" depth="0.1" height="0.1"></a-box>
+
+
+
                 </a-entity>
 
             </a-marker>
-            <a-entity camera>
-                <a-cursor></a-cursor> 
+            <a-entity position="0 1 1"  camera>
+               <!--  <a-cursor></a-cursor> -->
             </a-entity>
             <!-- use this 
                 <a-cursor></a-cursor>                
